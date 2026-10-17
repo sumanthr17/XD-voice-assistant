@@ -26,4 +26,5 @@ htmlcov/
 logs/
 *.log
 data/private/
+recordings/
 

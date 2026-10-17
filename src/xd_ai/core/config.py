@@ -9,6 +9,8 @@ from dotenv import load_dotenv
 
 DEFAULT_MODEL = "gemini-3.1-flash-lite"
 DEFAULT_HISTORY_TURNS = 10
+DEFAULT_WHISPER_MODEL = "base.en"
+DEFAULT_TTS_RATE = 175
 
 
 @dataclass(frozen=True, slots=True)
@@ -18,6 +20,13 @@ class Settings:
     gemini_api_key: str | None
     gemini_model: str = DEFAULT_MODEL
     max_history_turns: int = DEFAULT_HISTORY_TURNS
+    microphone_device: int | str | None = None
+    audio_sample_rate: int | None = None
+    whisper_model: str = DEFAULT_WHISPER_MODEL
+    whisper_device: str = "cpu"
+    whisper_compute_type: str = "int8"
+    tts_rate: int = DEFAULT_TTS_RATE
+    tts_voice: str | None = None
 
     @property
     def has_gemini_credentials(self) -> bool:
@@ -34,6 +43,18 @@ def load_settings() -> Settings:
         max_history_turns=_positive_int(
             os.getenv("XD_AI_MAX_HISTORY_TURNS"), DEFAULT_HISTORY_TURNS
         ),
+        microphone_device=_device_selector(os.getenv("XD_AI_MICROPHONE")),
+        audio_sample_rate=_optional_positive_int(os.getenv("XD_AI_SAMPLE_RATE")),
+        whisper_model=(
+            os.getenv("XD_AI_WHISPER_MODEL", DEFAULT_WHISPER_MODEL).strip()
+            or DEFAULT_WHISPER_MODEL
+        ),
+        whisper_device=os.getenv("XD_AI_WHISPER_DEVICE", "cpu").strip() or "cpu",
+        whisper_compute_type=(
+            os.getenv("XD_AI_WHISPER_COMPUTE_TYPE", "int8").strip() or "int8"
+        ),
+        tts_rate=_positive_int(os.getenv("XD_AI_TTS_RATE"), DEFAULT_TTS_RATE),
+        tts_voice=_optional_value("XD_AI_TTS_VOICE"),
     )
 
 
@@ -48,4 +69,24 @@ def _positive_int(value: str | None, default: int) -> int:
     except ValueError:
         return default
     return parsed if parsed > 0 else default
+
+
+def _optional_positive_int(value: str | None) -> int | None:
+    if value is None or not value.strip():
+        return None
+    try:
+        parsed = int(value)
+    except ValueError:
+        return None
+    return parsed if parsed > 0 else None
+
+
+def _device_selector(value: str | None) -> int | str | None:
+    if value is None or not value.strip():
+        return None
+    selector = value.strip()
+    try:
+        return int(selector)
+    except ValueError:
+        return selector
 
