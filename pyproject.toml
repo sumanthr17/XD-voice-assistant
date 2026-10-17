@@ -4,8 +4,8 @@ build-backend = "hatchling.build"
 
 [project]
 name = "xd-ai"
-version = "0.1.0"
-description = "A modular, text-first personal AI assistant."
+version = "0.2.0"
+description = "A modular text and voice personal AI assistant."
 readme = "README.md"
 requires-python = ">=3.11"
 license = { file = "LICENSE" }
@@ -13,7 +13,12 @@ authors = [{ name = "XD AI Contributors" }]
 dependencies = [
     "google-genai>=2.31.0,<3.0.0",
     "python-dotenv>=1.0.0",
+    # faster-whisper 1.2.1 is incompatible with PyAV 19's av.open signature.
+    "av>=11,<19",
+    "faster-whisper>=1.2.1,<2.0.0",
+    "pyttsx3>=2.99,<3.0.0",
     "rich>=13.7.0",
+    "sounddevice>=0.5.3,<1.0.0",
 ]
 
 [project.optional-dependencies]
